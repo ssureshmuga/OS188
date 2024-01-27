@@ -1,0 +1,160 @@
+    1  mkdir acme-demo-html
+    2  cd acme-demo-html/
+    3  mkdir html
+    4  pwd
+    5  cd html/
+    6  vi index.html
+    7  podman run -d --name acme-demo-html -v /home/student/acme-demo-html/html/:/usr/share/nginx/html:Z -p 8001:80 docker.io/library/nginx
+    8  curl localhost:8001
+    9  echo $(date)
+   10  echo $(date) > index.html
+   11  curl localhost:8001
+   12  pwd
+   13  cd
+   14  ll
+   15  mkdir acme-nginx-web
+   16  cd acme-nginx-web/
+   17  mkdir html
+   18  cd html/
+   19  vi index.html
+   20  podman cp acme-demo-html:/etc/nginx/nginx.conf .
+   21  cd ..
+   22  pwd
+   23  mkdir conf
+   24  cd conf/
+   25  podman cp acme-demo-html:/etc/nginx/nginx.conf .
+   26  ls
+   27  mv nginx.conf default.conf
+   28  ll
+   29  podman run -d --name acme-demo-nginx -p 8002:80 docker.io/library/nginx
+   30  podman ps
+   31  podman cp /home/student/acme-nginx-web/html/index.html acme-demo-nginx:/usr/share/nginx/html/
+   32  podman cp /home/student/acme-nginx-web/conf/default.conf acme-demo-nginx:/etc/nginx/nginx.conf
+   33  podman exec -it acme-demo-nginx nginx -s reload
+   34  curl localhost:8002
+   35  cd
+   36  ll
+   37  podman create --name acme_nginx_container1 -p 8003:8080 -e RESPONSE=Welcome_Acme_Nginx_Container_1 quay.io/myacme/welcome
+   38  podman create --name acme_nginx_container2 -p 8003:8080 -e RESPONSE=Welcome_Acme_Nginx_Container_2 quay.io/myacme/welcome
+   39  podman start acme_nginx_container1
+   40  curl localhost:8003
+   41  podman stop acme_nginx_container1 
+   42  podman start acme_nginx_container2
+   43  curl localhost:8003
+   44  mkdir acme-mariadb-db
+   45  cd acme-mariadb-db/
+   46  mkdir acme-mariadb-containerfile
+   47  cd acme-mariadb-containerfile/
+   48  cd ..
+   49  ll
+   50  touch acme-mariadb-containerfile
+   51  rm -rm acme-mariadb-containerfile/
+   52  ll
+   53  rm -rf acme-mariadb-containerfile/
+   54  ll
+   55  touch acme-mariadb-containerfile
+   56  ll
+   57  vim acme-mariadb-containerfile 
+   58  podman build -t acme-mariadb:latest --file acme-mariadb-containerfile 
+   59  podman build -t acme-mariadb:latest --file acme-mariadb-containerfile --build-arg ACME_MARIADB_DATABASE=acme --build-arg ACME_MARIADB_PASSWORD=acme
+   60  vim acme-mariadb-containerfile 
+   61  podman build -t acme-mariadb:latest --file acme-mariadb-containerfile --build-arg ACME_MARIADB_DATABASE=acme --build-arg ACME_MARIADB_PASSWORD=acme
+   62  pwd
+   63  mdkir export
+   64  mkdir export
+   65  cd export/
+   66  ll
+   67  mkdir script
+   68  mv script/ scripts
+   69  ll
+   70  cd scripts/
+   71  export.sh
+   72  vi export.sh
+   73  podman images 
+   74  podman tag acme-mariadb:latest quay.io/ssureshmuga/acme-mariadb:latest
+   75  podman login quay.io/ssureshmuga
+   76  podman push quay.io/ssureshmuga/acme-mariadb:latest
+   77  ll
+   78  vi export.sh
+   79  chmod a+x export.sh 
+   80  vim acme-db-export-containerfile
+   81  podman build -t acme-mariadb-exporter:latest --file acme-db-export-containerfile 
+   82  ll
+   83  cd ..
+   84  mv scripts/acme-db-export-containerfile .
+   85  podman build -t acme-mariadb-exporter:latest --file acme-db-export-containerfile 
+   86  podman images
+   87  podman tag acme-mariadb-exporter:latest quay.io/ssureshmuga/acme-mariadb-exporter:latest
+   88  podman push quay.io/ssureshmuga/acme-mariadb-exporter:latest
+   89  podman run -d --name acme-mariadb-test -e MARIADB_DATABASE=acme -e MARIADB_PASSWORD=acme quay.io/ssureshmuga/acme-mariadb:latest
+   90  podman ps
+   91  podman ps -a
+   92  podman run -d --name acme-mariadb-exporter -v /home/student/acme-mariadb-db/export/:/home:Z quay.io/ssureshmuga/acme-mariadb-exporter:latest 
+   93  podman ls 
+   94  ls
+   95  ll
+   96  podman ps -a
+   97  cd
+   98  podman network create acme-wp-net
+   99  podman volume create acme-wp-backend
+  100  podman volume create acme-wp-app
+  101  podman volume create acme-wordpress-data
+  102  podman run -d --name mariadb -v acme-wp-backend:/bitnami/mariadb -n acme-wp-net quay.io/acme/mariadb:1.0
+  103  podman run -d --name mariadb -v acme-wp-backend:/bitnami/mariadb --network acme-wp-net quay.io/acme/mariadb:1.0
+  104  podman run -d --name mariadb -v acme-wp-backend:/bitnami/mariadb --network acme-wp-net quay.io/acme/mariadb:latest
+  105  podman run -d --name mariadb -v acme-wp-backend:/bitnami/mariadb --network acme-wp-net docker.io/acme/mariadb:1.0
+  106  podman run -d --name mariadb -v acme-wp-backend:/bitnami/mariadb --network acme-wp-net docker.io/myacme/mariadb:1.0
+  107  podman run -d --name mariadb -v acme-wp-backend:/bitnami/mariadb --network acme-wp-net docker.io/myacme/mariadb:latest
+  108  podman logout 
+  109  podman logout quay.io/ssureshmuga
+  110  podman run -d --name mariadb -v acme-wp-backend:/bitnami/mariadb --network acme-wp-net docker.io/myacme/mariadb:1.0
+  111  podman images
+  112  podman run -d --name mariadb -v acme-wp-backend:/bitnami/mariadb --network acme-wp-net 2b54778e06a3
+  113  podman ps
+  114  podman ps -a
+  115  podman logs mariadb 
+  116  podman rm mariadb 
+  117  podman run -d --name mariadb -v acme-wp-backend:/bitnami/mariadb --network acme-wp-net -e MARIADB_ROOT_PASSWORD=acme 2b54778e06a3
+  118  podman ps
+  119  podman run -d --name acme-wp-app -v acme-wp-app:/etc/nginx --network acme-wp-net -p 8080:8080 docker.io/myacme/nginx
+  120  podman image
+  121  podman images
+  122  podman run -d --name acme-wp-app -v acme-wp-app:/etc/nginx --network acme-wp-net -p 8080:8080 a8758716bb6a
+  123  podman ps
+  124  podman run -d --name acme-wordpress -v acme-wordpress-data:/bitnami/wordpress --network acme-wp-net -p 8004:8080 -p 8443:8443 docker.io/myacme/wordpress:1.0
+  125  podman run -d --name acme-wordpress -v acme-wordpress-data:/bitnami/wordpress --network acme-wp-net -p 8004:8080 -p 8443:8443 quay.io/myacme/wordpress:1.0
+  126  podman ps
+  127  podman stop 0242647cdc10
+  128  podman stop 9c1d55761293
+  129  podman ps
+  130  podman ps -a
+  131  podman rm wordpress
+  132  podman rm acme-wordpress
+  133  podman rm acme-wp-app
+  134  podman ps
+  135  podman rm -f mariadb
+  136  podman ps
+  137  podman run -d --name mariadb -v acme-wp-backend:/bitnami/mariadb --network acme-wp-net quay.io/myacme/mariadb:1.0
+  138  podman run -d --name acme-wp-app -v acme-wp-app:/etc/nginx --network acme-wp-net -p 8080:8080 quay.io/myacme/nginx
+  139  podman run -d --name acme-wordpress -v acme-wordpress-data:/bitnami/wordpress --network acme-wp-net -p 8004:8080 -p 8443:8443 quay.io/myacme/wordpress:1.0
+  140  podman ps
+  141  podman network create acme-wp-ts
+  142  podman volume create acme-wp-app-ts
+  143  podman volume create acme-backend-ts
+  144  podman run -d --name acme-backend-ts -e MARIADB_DATABASE=acme -e MARIADB_PASSWORD=acme --network acme-wp-ts -v acme-backend-ts:/var/lib/mysql quay.io/myacme/mariadb:latest
+  145  podman ps
+  146  podman ps -a
+  147  podman logs acme-backend-ts 
+  148  podman rm acme-backend-ts 
+  149  podman run -d --name acme-backend-ts -e MARIADB_DATABASE=acme -e MARIADB_PASSWORD=acme -e MARIADB_ROOT_PASSWORD=acme --network acme-wp-ts -v acme-backend-ts:/var/lib/mysql quay.io/myacme/mariadb:latest
+  150  podman ps
+  151  podman run -d --name acme-wp-app --network acme-wp-ts -v acme-wp-app-ts:/usr/share/html quay.io/myacme/nginx:latest
+  152  podman run -d --name acme-wp-app-ts --network acme-wp-ts -v acme-wp-app-ts:/usr/share/html quay.io/myacme/nginx:latest
+  153  podman ps
+  154  podman run -d --name acme-wp-frontend-ts --network acme-wp-ts -v acme-wp-app-ts:/usr/share/html/ quay.io/myacme/wordpress:latest
+  155  podman rm -f acme-wp-frontend-ts 
+  156  podman run -d --name acme-wp-frontend-ts --network acme-wp-ts -v acme-wp-app-ts:/usr/share/html/ -p 8005:8080 quay.io/myacme/wordpress:latest
+  157  podman ps
+  158  podman logs acme-wp-frontend-ts 
+  159  history 
+  160  history > history_188.txt
